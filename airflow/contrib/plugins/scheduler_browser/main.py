@@ -48,23 +48,28 @@ class SchedulerBrowserView(BaseView, wwwutils.DataProfilingMixin):
         start_date = end_date - timedelta(days=1)
         sql = """
             select 
-                dag_id, 
-                state,
-                min(start_date) as start_date, 
-                max(end_date) as  end_date, 
-                max(end_date)-min(start_date) as  duration
-            from task_instance 
+                a.dag_id, 
+                a.state, 
+                min(a.start_date) as start_date, 
+                max(a.end_date) as  end_date, 
+                max(a.end_date)-min(a.start_date) as duration,
+                b.job_type, 
+                a.job_id
+            from task_instance as a
+            join job as b 
+            ON a.job_id = b.id
             where 
-                `start_date` >= "{start_date}" 
-                and  `start_date` < "{end_date}" 
-                and state != 'failed'
-            group by dag_id 
+                a.start_date >= "{start_date}" 
+                and  a.start_date < "{end_date}" 
+                and a.state != 'failed'
+            group by a.dag_id, a.job_id 
             order by start_date;
         """.format(start_date=start_date, end_date=end_date)
         h = MySqlHook(METASTORE_MYSQL_CONN_ID)
         rows = h.get_records(sql)
         tasks = []
         taskNames = []
+        name_set = set("")
         time_format = "%Y-%m-%dT%H:%M:%S"
         for row in rows:
             dag_id = row[0]
@@ -82,10 +87,11 @@ class SchedulerBrowserView(BaseView, wwwutils.DataProfilingMixin):
                     'duration': duration
                     }
             taskNames.append(dag_id)
+            name_set.add(dag_id)
             tasks.append(task)
 
         data = {
-            'height': 20 * len(taskNames),
+            'height': 20 * len(name_set),
             'tasks': tasks,
             'taskNames': taskNames,
             'taskStatus': {'success':'success'}
