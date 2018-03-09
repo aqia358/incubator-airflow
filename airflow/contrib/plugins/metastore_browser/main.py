@@ -25,7 +25,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.plugins_manager import AirflowPlugin
 from airflow.www import utils as wwwutils
 
-METASTORE_CONN_ID = 'metastore_default'
+METASTORE_CONN_ID = 'hiveserver2_default'
 METASTORE_MYSQL_CONN_ID = 'metastore_mysql'
 METASTORE_POSTGRE_CONN_ID = 'hive_metadata_pg'
 PRESTO_CONN_ID = 'presto_default'
@@ -116,10 +116,10 @@ class MetastoreBrowserView(BaseView, wwwutils.DataProfilingMixin):
         where_clause = ''
         if DB_WHITELIST:
             dbs = ",".join(["'" + db + "'" for db in DB_WHITELIST])
-            where_clause = "AND b.name IN ({})".format(dbs)
+            where_clause = """AND b."NAME" IN ({})""".format(dbs)
         if DB_BLACKLIST:
             dbs = ",".join(["'" + db + "'" for db in DB_BLACKLIST])
-            where_clause = "AND b.name NOT IN ({})".format(dbs)
+            where_clause = """AND b."NAME" NOT IN ({})""".format(dbs)
         sql = """
         SELECT CONCAT(b."NAME", '.', a."TBL_NAME"), "TBL_TYPE"
         FROM "TBLS" a
