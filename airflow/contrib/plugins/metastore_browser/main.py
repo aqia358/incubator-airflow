@@ -20,13 +20,14 @@ from flask_admin import BaseView, expose
 import pandas as pd
 
 from airflow.hooks.hive_hooks import HiveMetastoreHook, HiveCliHook
-from airflow.hooks.mysql_hook import MySqlHook
 from airflow.hooks.presto_hook import PrestoHook
+from airflow.hooks.postgres_hook import PostgresHook
 from airflow.plugins_manager import AirflowPlugin
 from airflow.www import utils as wwwutils
 
 METASTORE_CONN_ID = 'metastore_default'
 METASTORE_MYSQL_CONN_ID = 'metastore_mysql'
+METASTORE_POSTGRE_CONN_ID = 'hive_metadata_pg'
 PRESTO_CONN_ID = 'presto_default'
 HIVE_CLI_CONN_ID = 'hive_default'
 DEFAULT_DB = 'default'
@@ -45,13 +46,13 @@ class MetastoreBrowserView(BaseView, wwwutils.DataProfilingMixin):
     def index(self):
         sql = """
         SELECT
-            a.name as db, db_location_uri as location,
-            count(1) as object_count, a.desc as description
-        FROM DBS a
-        JOIN TBLS b ON a.DB_ID = b.DB_ID
-        GROUP BY a.name, db_location_uri, a.desc
+            a."NAME" as db, "DB_LOCATION_URI" as location,
+            count(1) as object_count, a."DESC" as description
+        FROM "DBS" a
+        JOIN "TBLS" b ON a."DB_ID" = b."DB_ID"
+        GROUP BY a."NAME", "DB_LOCATION_URI", a."DESC"
         """.format(**locals())
-        h = MySqlHook(METASTORE_MYSQL_CONN_ID)
+        h = PostgresHook(METASTORE_POSTGRE_CONN_ID)
         df = h.get_pandas_df(sql)
         df.db = (
             '<a href="/admin/metastorebrowserview/db/?db=' +
@@ -87,22 +88,22 @@ class MetastoreBrowserView(BaseView, wwwutils.DataProfilingMixin):
         schema, table = request.args.get("table").split('.')
         sql = """
         SELECT
-            a.PART_NAME,
-            a.CREATE_TIME,
-            c.LOCATION,
-            c.IS_COMPRESSED,
-            c.INPUT_FORMAT,
-            c.OUTPUT_FORMAT
-        FROM PARTITIONS a
-        JOIN TBLS b ON a.TBL_ID = b.TBL_ID
-        JOIN DBS d ON b.DB_ID = d.DB_ID
-        JOIN SDS c ON a.SD_ID = c.SD_ID
+            a."PART_NAME",
+            a."CREATE_TIME",
+            c."LOCATION",
+            c."IS_COMPRESSED",
+            c."INPUT_FORMAT",
+            c."OUTPUT_FORMAT"
+        FROM "PARTITIONS" a
+        JOIN "TBLS" b ON a."TBL_ID" = b."TBL_ID"
+        JOIN "DBS" d ON b."DB_ID" = d."DB_ID"
+        JOIN "SDS" c ON a."SD_ID" = c."SD_ID"
         WHERE
-            b.TBL_NAME like '{table}' AND
-            d.NAME like '{schema}'
-        ORDER BY PART_NAME DESC
+            b."TBL_NAME" like '{table}' AND
+            d."NAME" like '{schema}'
+        ORDER BY "PART_NAME" DESC
         """.format(**locals())
-        h = MySqlHook(METASTORE_MYSQL_CONN_ID)
+        h = PostgresHook(METASTORE_POSTGRE_CONN_ID)
         df = h.get_pandas_df(sql)
         return df.to_html(
             classes="table table-striped table-bordered table-hover",
@@ -120,18 +121,18 @@ class MetastoreBrowserView(BaseView, wwwutils.DataProfilingMixin):
             dbs = ",".join(["'" + db + "'" for db in DB_BLACKLIST])
             where_clause = "AND b.name NOT IN ({})".format(dbs)
         sql = """
-        SELECT CONCAT(b.NAME, '.', a.TBL_NAME), TBL_TYPE
-        FROM TBLS a
-        JOIN DBS b ON a.DB_ID = b.DB_ID
+        SELECT CONCAT(b."NAME", '.', a."TBL_NAME"), "TBL_TYPE"
+        FROM "TBLS" a
+        JOIN "DBS" b ON a."DB_ID" = b."DB_ID"
         WHERE
-            a.TBL_NAME NOT LIKE '%tmp%' AND
-            a.TBL_NAME NOT LIKE '%temp%' AND
-            b.NAME NOT LIKE '%tmp%' AND
-            b.NAME NOT LIKE '%temp%'
+            a."TBL_NAME" NOT LIKE '%tmp%' AND
+            a."TBL_NAME" NOT LIKE '%temp%' AND
+            b."NAME" NOT LIKE '%tmp%' AND
+            b."NAME" NOT LIKE '%temp%'
         {where_clause}
         LIMIT {LIMIT};
         """.format(where_clause=where_clause, LIMIT=TABLE_SELECTOR_LIMIT)
-        h = MySqlHook(METASTORE_MYSQL_CONN_ID)
+        h = PostgresHook(METASTORE_POSTGRE_CONN_ID)
         d = [
                 {'id': row[0], 'text': row[0]}
             for row in h.get_records(sql)]
