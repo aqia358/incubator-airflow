@@ -65,12 +65,12 @@ class DcmpDag(Base):
 
     def __repr__(self):
         return self.dag_name
-    
+
     def set_last_editor(self, user):
         if user:
             self.last_editor_user_id = user.id
             self.last_editor_user_name = user.username
-    
+
     def start_editing(self, user):
         if user:
             if not self.editing or user.id != self.editing_user_id:
@@ -78,15 +78,15 @@ class DcmpDag(Base):
             self.editing = True
             self.editing_user_id = user.id
             self.editing_user_name = user.username
-    
+
     def set_approver(self, user):
         if user:
             self.approver_user_id = user.id
             self.approver_user_name = user.username
-    
+
     def end_editing(self):
         self.editing = False
-    
+
     @provide_session
     def get_dcmp_dag_conf(self, version=None, session=None):
         if not version:
@@ -96,24 +96,24 @@ class DcmpDag(Base):
             DcmpDagConf.version == version,
         ).first()
         return dcmp_dag_conf
-    
+
     @provide_session
     def get_conf(self, pure=False, version=None, session=None):
         dcmp_dag_conf = self.get_dcmp_dag_conf(version=version, session=session)
         if dcmp_dag_conf:
             conf = dcmp_dag_conf.conf
             if not pure:
-                conf["owner"] = self.last_editor_user_name if self.last_editor_user_name else "airflow"
+                conf["owner"] = self.last_editor_user_name if self.last_editor_user_name else "hdp-data"
         else:
             conf = {}
         return conf
-    
+
     @provide_session
     def get_approved_conf(self, pure=False, session=None):
         if self.approved_version <= 0:
             return {}
         return self.get_conf(pure=pure, version=self.approved_version, session=session)
-    
+
     @provide_session
     def approve_conf(self, version=None, user=None, session=None):
         if not version:
@@ -124,7 +124,7 @@ class DcmpDag(Base):
         dcmp_dag_conf = self.get_dcmp_dag_conf(version=self.approved_version, session=session)
         dcmp_dag_conf.approved_at = self.last_approved_at
         dcmp_dag_conf.set_approver(user)
-    
+
     @provide_session
     def update_conf(self, conf, user=None, session=None):
         created = self.id is None
@@ -171,7 +171,7 @@ class DcmpDag(Base):
                     send_email(approval_notification_emails_list, title, body)
         else:
             self.approve_conf(user=user, session=session)
-    
+
     @provide_session
     def delete_conf(self, user=None, session=None):
         dcmp_dag_conf = DcmpDagConf()
@@ -183,7 +183,7 @@ class DcmpDag(Base):
         dcmp_dag_conf.set_creator(user)
         session.add(dcmp_dag_conf)
         session.delete(self)
-    
+
     @classmethod
     @provide_session
     def create_or_update_conf(cls, conf, user=None, session=None):
@@ -231,12 +231,12 @@ class DcmpDagConf(Base):
     def conf(cls):
         return synonym('_conf',
                        descriptor=property(cls.get_conf, cls.set_conf))
-    
+
     def set_approver(self, user):
         if user:
             self.approver_user_id = user.id
             self.approver_user_name = user.username
-    
+
     def set_creator(self, user):
         if user:
             self.creator_user_id = user.id
