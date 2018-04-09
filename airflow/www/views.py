@@ -271,6 +271,19 @@ def data_profiling_required(f):
     return decorated_function
 
 
+def admin_required(f):
+    """Decorator for views requiring superuser access"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.is_superuser():
+            return f(*args, **kwargs)
+        else:
+            flash("This page requires superuser privileges", "error")
+            return redirect(url_for('admin.index'))
+
+    return decorated_function
+
+
 def fused_slots(v, c, m, p):
     url = (
         '/admin/taskinstance/' +
@@ -325,6 +338,7 @@ class Airflow(BaseView):
 
     @expose('/chart_data')
     @data_profiling_required
+    @admin_required
     @wwwutils.gzipped
     # @cache.cached(timeout=3600, key_prefix=wwwutils.make_cache_key)
     def chart_data(self):
@@ -467,6 +481,7 @@ class Airflow(BaseView):
 
     @expose('/chart')
     @data_profiling_required
+    @admin_required
     def chart(self):
         if conf.getboolean('core', 'secure_mode'):
             abort(404)
@@ -1861,6 +1876,12 @@ class HomeView(AdminIndexView):
                 ~DM.is_subdag, DM.is_active,
                 DM.owners == current_user.user.username
             )
+        elif do_filter and owner_mode == 'group':
+            sql_query = sql_query.filter(
+                ~DM.is_subdag,
+                DM.is_active,
+                DM.owners.in_(current_user.group_users)
+            )
         else:
             sql_query = sql_query.filter(
                 ~DM.is_subdag, DM.is_active
@@ -1904,6 +1925,13 @@ class HomeView(AdminIndexView):
                 dag.dag_id: dag
                 for dag in unfiltered_webserver_dags
                 if dag.owner == current_user.user.username
+            }
+        elif do_filter and owner_mode == 'group':
+            # only show dags owned by @current_user.user.username
+            webserver_dags = {
+                dag.dag_id: dag
+                for dag in unfiltered_webserver_dags
+                if dag.owner == current_user.group_users
             }
         else:
             webserver_dags = {

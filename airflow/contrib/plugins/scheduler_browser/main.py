@@ -76,6 +76,8 @@ class SchedulerBrowserView(BaseView, wwwutils.DataProfilingMixin):
             state = row[1]
             start_date = row[2]
             end_date = row[3]
+            if not end_date:
+                end_date = datetime.now()
             duration = str(row[4])
             task = {'status': state,
                     'taskName': dag_id,
