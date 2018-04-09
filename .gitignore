@@ -1,5 +1,5 @@
 # Airflow configuration
-airflow.cfg
+# airflow.cfg
 unittests.cfg
 airflow_login.py
 dbinit.py
