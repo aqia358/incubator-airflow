@@ -1931,7 +1931,7 @@ class HomeView(AdminIndexView):
             webserver_dags = {
                 dag.dag_id: dag
                 for dag in unfiltered_webserver_dags
-                if dag.owner == current_user.group_users
+                if dag.owner in current_user.group_users
             }
         else:
             webserver_dags = {

@@ -39,6 +39,7 @@ if configuration.has_option('celery', 'celery_config_options'):
 else:
     celery_configuration = DEFAULT_CELERY_CONFIG
 
+celery_configuration.pop('broker_transport_options')
 app = Celery(
     configuration.get('celery', 'CELERY_APP_NAME'),
     config_source=celery_configuration)
