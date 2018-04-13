@@ -19,8 +19,8 @@ from airflow.settings import TIMEZONE
 
 
 # UTC time zone as a tzinfo instance.
-utc = pendulum.timezone('UTC')
-
+# utc = pendulum.timezone('UTC')
+utc = pendulum.timezone('Asia/Shanghai')
 
 def is_localized(value):
     """

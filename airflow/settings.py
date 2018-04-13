@@ -33,7 +33,7 @@ from airflow.utils.sqlalchemy import setup_event_handlers
 log = logging.getLogger(__name__)
 
 
-TIMEZONE = pendulum.timezone('UTC')
+TIMEZONE = pendulum.timezone('Asia/Shanghai')
 try:
     tz = conf.get("core", "default_timezone")
     if tz == "system":
