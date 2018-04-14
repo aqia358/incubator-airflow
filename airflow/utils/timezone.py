@@ -178,7 +178,7 @@ class LocalDateTime(TypeDecorator):
 
     def process_bind_param(self, value, dialect):
         if value is not None:
-            if not isinstance(value, datetime.datetime):
+            if not isinstance(value, dt.datetime):
                 raise TypeError('expected datetime.datetime, not ' +
                                 repr(value))
             elif value.tzinfo is None:

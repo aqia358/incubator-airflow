@@ -28,7 +28,7 @@ from sqlalchemy.pool import NullPool
 
 from airflow import configuration as conf
 from airflow.logging_config import configure_logging
-from airflow.utils.sqlalchemy import setup_event_handlers
+from airflow.utils.utils_sqlalchemy import setup_event_handlers
 
 log = logging.getLogger(__name__)
 
