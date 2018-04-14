@@ -55,7 +55,7 @@ from sqlalchemy import func, or_, and_
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import reconstructor, relationship, synonym
-from sqlalchemy_utc import UtcDateTime
+from airflow.utils.timezone import LocalDateTime
 
 from croniter import croniter
 import six
@@ -741,7 +741,7 @@ class DagPickle(Base):
     """
     id = Column(Integer, primary_key=True)
     pickle = Column(PickleType(pickler=dill))
-    created_dttm = Column(UtcDateTime, default=timezone.utcnow)
+    created_dttm = Column(LocalDateTime, default=timezone.utcnow)
     pickle_hash = Column(Text)
 
     __tablename__ = "dag_pickle"
@@ -772,9 +772,9 @@ class TaskInstance(Base, LoggingMixin):
 
     task_id = Column(String(ID_LEN), primary_key=True)
     dag_id = Column(String(ID_LEN), primary_key=True)
-    execution_date = Column(UtcDateTime, primary_key=True)
-    start_date = Column(UtcDateTime)
-    end_date = Column(UtcDateTime)
+    execution_date = Column(LocalDateTime, primary_key=True)
+    start_date = Column(LocalDateTime)
+    end_date = Column(LocalDateTime)
     duration = Column(Float)
     state = Column(String(20))
     _try_number = Column('try_number', Integer, default=0)
@@ -786,7 +786,7 @@ class TaskInstance(Base, LoggingMixin):
     queue = Column(String(50))
     priority_weight = Column(Integer)
     operator = Column(String(1000))
-    queued_dttm = Column(UtcDateTime)
+    queued_dttm = Column(LocalDateTime)
     pid = Column(Integer)
 
     __table_args__ = (
@@ -1926,9 +1926,9 @@ class TaskFail(Base):
 
     task_id = Column(String(ID_LEN), primary_key=True)
     dag_id = Column(String(ID_LEN), primary_key=True)
-    execution_date = Column(UtcDateTime, primary_key=True)
-    start_date = Column(UtcDateTime)
-    end_date = Column(UtcDateTime)
+    execution_date = Column(LocalDateTime, primary_key=True)
+    start_date = Column(LocalDateTime)
+    end_date = Column(LocalDateTime)
     duration = Column(Float)
 
     def __init__(self, task, execution_date, start_date, end_date):
@@ -1948,11 +1948,11 @@ class Log(Base):
     __tablename__ = "log"
 
     id = Column(Integer, primary_key=True)
-    dttm = Column(UtcDateTime)
+    dttm = Column(LocalDateTime)
     dag_id = Column(String(ID_LEN))
     task_id = Column(String(ID_LEN))
     event = Column(String(30))
-    execution_date = Column(UtcDateTime)
+    execution_date = Column(LocalDateTime)
     owner = Column(String(500))
     extra = Column(Text)
 
@@ -2884,12 +2884,12 @@ class DagModel(Base):
     # Whether that DAG was seen on the last DagBag load
     is_active = Column(Boolean, default=False)
     # Last time the scheduler started
-    last_scheduler_run = Column(UtcDateTime)
+    last_scheduler_run = Column(LocalDateTime)
     # Last time this DAG was pickled
-    last_pickled = Column(UtcDateTime)
+    last_pickled = Column(LocalDateTime)
     # Time when the DAG last received a refresh signal
     # (e.g. the DAG's "refresh" button was clicked in the web UI)
-    last_expired = Column(UtcDateTime)
+    last_expired = Column(LocalDateTime)
     # Whether (one  of) the scheduler is scheduling this DAG at the moment
     scheduler_lock = Column(Boolean)
     # Foreign key to the latest pickle_id
@@ -4099,7 +4099,7 @@ class Chart(Base):
         "User", cascade=False, cascade_backrefs=False, backref='charts')
     x_is_date = Column(Boolean, default=True)
     iteration_no = Column(Integer, default=0)
-    last_modified = Column(UtcDateTime, default=timezone.utcnow)
+    last_modified = Column(LocalDateTime, default=timezone.utcnow)
 
     def __repr__(self):
         return self.label
@@ -4120,8 +4120,8 @@ class KnownEvent(Base):
 
     id = Column(Integer, primary_key=True)
     label = Column(String(200))
-    start_date = Column(UtcDateTime)
-    end_date = Column(UtcDateTime)
+    start_date = Column(LocalDateTime)
+    end_date = Column(LocalDateTime)
     user_id = Column(Integer(), ForeignKey('users.id'),)
     known_event_type_id = Column(Integer(), ForeignKey('known_event_type.id'),)
     reported_by = relationship(
@@ -4249,7 +4249,7 @@ class XCom(Base, LoggingMixin):
     value = Column(LargeBinary)
     timestamp = Column(
         DateTime, default=timezone.utcnow, nullable=False)
-    execution_date = Column(UtcDateTime, nullable=False)
+    execution_date = Column(LocalDateTime, nullable=False)
 
     # source information
     task_id = Column(String(ID_LEN), nullable=False)
@@ -4567,9 +4567,9 @@ class DagRun(Base, LoggingMixin):
 
     id = Column(Integer, primary_key=True)
     dag_id = Column(String(ID_LEN))
-    execution_date = Column(UtcDateTime, default=timezone.utcnow)
-    start_date = Column(UtcDateTime, default=timezone.utcnow)
-    end_date = Column(UtcDateTime)
+    execution_date = Column(LocalDateTime, default=timezone.utcnow)
+    start_date = Column(LocalDateTime, default=timezone.utcnow)
+    end_date = Column(LocalDateTime)
     _state = Column('state', String(50), default=State.RUNNING)
     run_id = Column(String(ID_LEN))
     external_trigger = Column(Boolean, default=True)
@@ -4990,9 +4990,9 @@ class SlaMiss(Base):
 
     task_id = Column(String(ID_LEN), primary_key=True)
     dag_id = Column(String(ID_LEN), primary_key=True)
-    execution_date = Column(UtcDateTime, primary_key=True)
+    execution_date = Column(LocalDateTime, primary_key=True)
     email_sent = Column(Boolean, default=False)
-    timestamp = Column(UtcDateTime)
+    timestamp = Column(LocalDateTime)
     description = Column(Text)
     notification_sent = Column(Boolean, default=False)
 
@@ -5004,6 +5004,6 @@ class SlaMiss(Base):
 class ImportError(Base):
     __tablename__ = "import_error"
     id = Column(Integer, primary_key=True)
-    timestamp = Column(UtcDateTime)
+    timestamp = Column(LocalDateTime)
     filename = Column(String(1024))
     stacktrace = Column(Text)

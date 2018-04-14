@@ -752,6 +752,8 @@ class Airflow(BaseView):
         if ti is None:
             logs = ["*** Task instance did not exist in the DB\n"]
         else:
+            # liuhongliang
+            ti.execution_date = timezone.utc_to_local(ti.execution_date)
             logger = logging.getLogger('airflow.task')
             task_log_reader = conf.get('core', 'task_log_reader')
             handler = next((handler for handler in logger.handlers

@@ -36,7 +36,7 @@ from sqlalchemy import (
     Column, Integer, String, func, Index, or_, and_, not_)
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.session import make_transient
-from sqlalchemy_utc import UtcDateTime
+from airflow.utils.timezone import LocalDateTime
 from tabulate import tabulate
 from time import sleep
 
@@ -79,9 +79,9 @@ class BaseJob(Base, LoggingMixin):
     dag_id = Column(String(ID_LEN),)
     state = Column(String(20))
     job_type = Column(String(30))
-    start_date = Column(UtcDateTime())
-    end_date = Column(UtcDateTime())
-    latest_heartbeat = Column(UtcDateTime())
+    start_date = Column(LocalDateTime())
+    end_date = Column(LocalDateTime())
+    latest_heartbeat = Column(LocalDateTime())
     executor_class = Column(String(500))
     hostname = Column(String(500))
     unixname = Column(String(1000))
