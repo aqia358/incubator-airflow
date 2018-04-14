@@ -19,8 +19,8 @@ from airflow.settings import TIMEZONE
 
 
 # UTC time zone as a tzinfo instance.
-# utc = pendulum.timezone('UTC')
-utc = pendulum.timezone('Asia/Shanghai')
+utc = pendulum.timezone('UTC')
+# utc = pendulum.timezone('Asia/Shanghai')
 
 def is_localized(value):
     """
@@ -53,8 +53,7 @@ def utcnow():
     # pendulum utcnow() is not used as that sets a TimezoneInfo object
     # instead of a Timezone. This is not pickable and also creates issues
     # when using replace()
-    # d = dt.datetime.utcnow()
-    d = dt.datetime.now()
+    d = dt.datetime.utcnow()
     d = d.replace(tzinfo=utc)
 
     return d
@@ -74,6 +73,13 @@ def convert_to_utc(value):
         value = pendulum.instance(value, TIMEZONE)
 
     return value.astimezone(utc)
+
+
+def utc_to_local(value):
+    if not is_localized(value):
+        raise ValueError(
+            "utc_to_local expects a utc datetime, got %s" % value)
+    return value.astimezone(TIMEZONE)
 
 
 def make_aware(value, timezone=None):
