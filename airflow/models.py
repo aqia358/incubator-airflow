@@ -814,6 +814,7 @@ class TaskInstance(Base, LoggingMixin):
 
             execution_date = timezone.convert_to_utc(execution_date)
 
+        execution_date = timezone.convert_to_utc(execution_date)
         self.execution_date = execution_date
 
         self.queue = task.queue
