@@ -390,6 +390,6 @@ class AceEditorWidget(wtforms.widgets.TextArea):
 
 
 class UtcFilterConverter(FilterConverter):
-    @filters.convert('utcdatetime')
+    @filters.convert('utcdatetime', 'LocalDateTime')
     def conv_utcdatetime(self, column, name, **kwargs):
         return self.conv_datetime(column, name, **kwargs)
