@@ -57,7 +57,7 @@ def utcnow():
     d = dt.datetime.utcnow()
     d = d.replace(tzinfo=utc)
 
-    return d
+    return d.astimezone(TIMEZONE)
 
 
 def convert_to_utc(value):
@@ -73,7 +73,7 @@ def convert_to_utc(value):
     if not is_localized(value):
         value = pendulum.instance(value, TIMEZONE)
 
-    return value.astimezone(utc)
+    return value.astimezone(TIMEZONE)
 
 
 def utc_to_local(value):
