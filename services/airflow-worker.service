@@ -1,0 +1,13 @@
+[Unit]
+Description=airflow-worker
+
+[Service]
+Type=simple
+User=hdp-airflow
+Restart=on-failure
+LimitNOFILE=102400
+
+ExecStart=/data/software/app/airflow/start-worker.sh
+
+[Install]
+WantedBy=multi-user.target

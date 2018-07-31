@@ -1,0 +1,13 @@
+[Unit]
+Description=airflow-webserver
+
+[Service]
+Type=simple
+User=root
+Restart=on-failure
+LimitNOFILE=102400
+
+ExecStart=/data/software/app/airflow/start-webserver.sh
+
+[Install]
+WantedBy=multi-user.target
