@@ -85,8 +85,8 @@ def get_params(**kwargs):
     for k, v in kwargs.items():
         if k == 'showPaused':
             # True is default or None
-            if v or v is None:
-                continue
+            # if v or v is None:
+            #     continue
             params.append('{}={}'.format(k, v))
         elif v:
             params.append('{}={}'.format(k, v))

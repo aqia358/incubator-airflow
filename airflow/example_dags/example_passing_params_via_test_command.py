@@ -22,7 +22,7 @@ from airflow.operators.python_operator import PythonOperator
 dag = DAG("example_passing_params_via_test_command",
           default_args={"owner": "airflow",
                         "start_date": airflow.utils.dates.days_ago(1)},
-          schedule_interval='*/1 * * * *',
+          schedule_interval='1 0 * * *',
           dagrun_timeout=timedelta(minutes=4)
           )
 

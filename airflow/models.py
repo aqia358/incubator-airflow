@@ -2202,7 +2202,7 @@ class BaseOperator(LoggingMixin):
             queue=configuration.get('celery', 'default_queue'),
             pool=None,
             sla=None,
-            execution_timeout=None,
+            execution_timeout=timedelta(hours=2),
             on_failure_callback=None,
             on_success_callback=None,
             on_retry_callback=None,

@@ -231,7 +231,7 @@
         // check for key press on ENTER (key code 13) to trigger the search
         if (e.which === ENTER_KEY_CODE) {
           search_query = $('#dag_query').val();
-          window.location = DAGS_INDEX + "?search="+ encodeURI(search_query);
+          window.location = DAGS_INDEX + "?search="+ encodeURI(search_query) + "&showPaused=True";
           e.preventDefault();
         }
       });
@@ -271,7 +271,7 @@
         afterSelect: function(value) {
           search_query = value.trim()
           if (search_query) {
-            window.location = DAGS_INDEX + "?search="+ encodeURI(search_query);
+            window.location = DAGS_INDEX + "?search="+ encodeURI(search_query) + "&showPaused=True";
           }
         }
       });
